@@ -1,8 +1,25 @@
 # エンタープライズ向けエージェント・ソリューションアクセラレータ（Deep Research / Long-Running / Memory / Observability）
 
+> **重要な更新**  
+> **本リポジトリは Microsoft Agent Framework を使用するように更新されました！**  
+> Agent Framework は AutoGen と Semantic Kernel の後継として開発された、AI エージェントとマルチエージェント ワークフローを構築するための統合されたオープンソースフレームワークです。
+
 > **目的**  
-> 本リポジトリは、Microsoft Agent Framework（Autogen + Semantic Kernel 統合）と **Azure AI Foundry** を用いて、**長時間・複雑タスク（Deep Research 型）** を安全に遂行し、**メモリ（短期/長期）** と **オブザーバビリティ** を備えた **エンタープライズ実装の叩き台（MVP入力）** を提供します。  
+> 本リポジトリは、**Microsoft Agent Framework** と **Azure AI Foundry** を用いて、**長時間・複雑タスク（Deep Research 型）** を安全に遂行し、**メモリ（短期/長期）** と **オブザーバビリティ** を備えた **エンタープライズ実装の叩き台（MVP入力）** を提供します。  
 > コードは拡張可能なモジュラー構成で、PoC → MVP → 本番の段階的拡張を前提に設計しています。
+
+---
+
+## 🎯 Microsoft Agent Framework について
+
+**Microsoft Agent Framework** は、AI エージェントとマルチエージェント ワークフローを構築するための次世代フレームワークです：
+
+- ✅ **統合された基盤**: AutoGen と Semantic Kernel の長所を組み合わせ
+- ✅ **エンタープライズ機能**: 型安全、フィルター、テレメトリ、状態管理
+- ✅ **柔軟なワークフロー**: グラフベースのオーケストレーション
+- ✅ **Human-in-the-loop**: 実行時間の長いシナリオと承認フロー
+
+📖 **詳細**: [Agent Framework 移行ガイド](docs/AGENT_FRAMEWORK_MIGRATION.md)
 
 ---
 
@@ -169,12 +186,42 @@ curl -X POST http://localhost:8080/jobs \
 
 ---
 
-## 🤖 Microsoft Agent Framework 利用方針
+## 🤖 Microsoft Agent Framework の実装
 
-* **エージェント定義**：役割・スキル（ツール）・メモリ・ポリシーを YAML/JSON で宣言
-* **実装**：Planning（自動計画）→ Acting（ツール実行）→ Reflecting（自己検証/改善）→ Reporting（成果物）
-* **協調**：複数エージェント（Researcher / Fact-Checker / Writer / Reviewer）を役割分担で連携
-* **安全性**：コンテンツ/ツール実行のガードレール（ドメイン許可、PII/機微検知、承認ゲート）
+本プロジェクトは Microsoft Agent Framework を使用して AI エージェントを実装しています。
+
+### エージェントの作成
+
+```python
+from agents.deep_research.agent import DeepResearchAgent
+
+# エージェントの初期化（Agent Framework を使用）
+agent = DeepResearchAgent()
+
+# リサーチタスクの実行
+result = await agent.run("Python プログラミングについて調査")
+```
+
+### 実装の特徴
+
+* **ChatAgent**: Azure OpenAI を使用した LLM 統合
+* **ファンクションツール**: `@ai_function` デコレータによるツール定義
+* **自動ツール呼び出し**: Agent Framework による動的なツール選択と実行
+* **型安全**: Pydantic による厳密な型チェック
+
+### 環境変数の設定
+
+Agent Framework を使用する場合、以下の環境変数が必要です：
+
+```bash
+# Azure OpenAI 設定
+export AZURE_OPENAI_ENDPOINT="https://<your-resource>.openai.azure.com"
+export AZURE_OPENAI_CHAT_DEPLOYMENT_NAME="gpt-4o-mini"
+export AZURE_OPENAI_API_KEY="<your-api-key>"
+
+# または Azure CLI 認証を使用
+# az login
+```
 
 ### エージェント設定例
 
@@ -393,6 +440,19 @@ A. ステートマシンのチェックポイントから再開。ワーカー�
 ### Q. 記憶の消去/保持期間は？
 
 A. `.retention` ルールで TTL を設定。Purge API で選択的に削除可能。
+
+### Q. Agent Framework への移行について
+
+A. 本プロジェクトは Microsoft Agent Framework に移行済みです。詳細は [Agent Framework 移行ガイド](docs/AGENT_FRAMEWORK_MIGRATION.md) を参照してください。環境変数 `USE_AGENT_FRAMEWORK=false` を設定することで、レガシー実装も使用可能です。
+
+### Q. Agent Framework を使用するメリットは？
+
+A. 
+- 統合された API と一貫したパターン
+- エンタープライズグレードの機能（型安全、テレメトリ、状態管理）
+- マルチエージェント オーケストレーションの組み込みサポート
+- Microsoft の継続的なサポートとアップデート
+- AutoGen と Semantic Kernel のベストプラクティスの統合
 
 ### Q. コスト管理は？
 
