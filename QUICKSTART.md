@@ -1,12 +1,15 @@
 # クイックスタートガイド
 
-このガイドでは、エンタープライズエージェントフレームワークを最速でセットアップして実行する手順を説明します。
+このガイドでは、Microsoft Agent Framework を使用したエンタープライズエージェントを最速でセットアップして実行する手順を説明します。
+
+> **重要**: 本プロジェクトは Microsoft Agent Framework に移行済みです。詳細は [Agent Framework 移行ガイド](docs/AGENT_FRAMEWORK_MIGRATION.md) を参照してください。
 
 ## 前提条件
 
 - Python 3.10 以上
 - pip (Python パッケージマネージャー)
-- （オプション）Azure サブスクリプション
+- Azure OpenAI リソース（本番環境用）
+- （オプション）Azure CLI (`az login` で認証済み）
 
 ## 1. ローカル開発環境のセットアップ
 
@@ -17,9 +20,30 @@
 cp .env.example .env
 
 # .env ファイルを編集して必要な値を設定
-# 最低限必要な設定（開発モード）:
-# - LOG_LEVEL=DEBUG
-# - ENVIRONMENT=dev
+```
+
+#### Agent Framework を使用する場合（推奨）
+
+```bash
+# .env ファイルに以下を設定
+USE_AGENT_FRAMEWORK=true
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=gpt-4o-mini
+
+# 認証方法 1: API キー
+AZURE_OPENAI_API_KEY=your-api-key
+
+# または認証方法 2: Azure CLI
+# az login を実行
+```
+
+#### 開発/テスト用（認証情報なし）
+
+```bash
+# Agent Framework はモックモードで動作します
+USE_AGENT_FRAMEWORK=true
+LOG_LEVEL=DEBUG
+ENVIRONMENT=dev
 ```
 
 ### Python 依存関係のインストール
@@ -109,16 +133,73 @@ curl http://localhost:8080/health
 
 ## 4. テストの実行
 
-```bash
-# ユニットテスト
-pip install pytest pytest-asyncio
-pytest tests/unit/ -v
+### ユニットテスト
 
-# 評価/ベンチマーク
+```bash
+# 依存関係のインストール
+pip install pytest pytest-asyncio
+
+# レガシー実装でテスト
+export USE_AGENT_FRAMEWORK=false
+pytest tests/unit/test_agent.py -v
+
+# Agent Framework でテスト（モックモード）
+export USE_AGENT_FRAMEWORK=true
+pytest tests/unit/test_agent.py -v
+```
+
+### Agent Framework の検証
+
+```bash
+# 包括的なテストスクリプト
+python test_agent_framework.py
+
+# 出力例:
+# ✓ Configuration loaded
+# ✓ Function tools working
+# ✓ Agent Framework implementation working
+```
+
+### 評価/ベンチマーク
+
+```bash
 python tests/eval/test_benchmarks.py
 ```
 
-## 5. 実用例の確認
+## 5. Agent Framework の使用例
+
+### Python コードから直接使用
+
+```python
+import asyncio
+from agents.deep_research.agent import DeepResearchAgent
+
+async def main():
+    # エージェントの作成
+    agent = DeepResearchAgent()
+    
+    # リサーチタスクの実行
+    result = await agent.run(
+        "Python プログラミングのメリットについて調査してください"
+    )
+    
+    # レポートの表示
+    print(result["report"])
+
+asyncio.run(main())
+```
+
+### 利用可能なツール
+
+Agent Framework 実装では、以下のツールが利用可能です：
+
+- `web_search`: Web 検索（Bing Search API）
+- `rag_search`: 内部ナレッジベース検索
+- `browse_url`: 安全な URL ブラウジング
+- `analyze_data`: データ分析
+- `verify_facts`: ファクトチェック
+
+## 6. 実用例の確認
 
 以下のファイルに詳細な使用例があります:
 

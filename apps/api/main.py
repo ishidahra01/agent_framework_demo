@@ -103,6 +103,7 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
+    from datetime import timezone
     return {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat()
