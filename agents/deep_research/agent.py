@@ -1,37 +1,58 @@
 """
 Deep Research Agent - Main Implementation
-Planning, Execution, Reflection, and Reporting cycle
+Now powered by Microsoft Agent Framework (successor to AutoGen and Semantic Kernel)
+
+This module provides backward compatibility while using the new Agent Framework implementation.
 """
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import yaml
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
+# Try to import Agent Framework implementation
+USE_AGENT_FRAMEWORK = os.getenv("USE_AGENT_FRAMEWORK", "true").lower() in ("true", "1", "yes")
 
-@dataclass
-class ResearchPlan:
-    """Research plan structure"""
-    task: str
-    steps: List[Dict[str, Any]] = field(default_factory=list)
-    status: str = "pending"  # pending, in_progress, completed, failed
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
-    
-    
-@dataclass
-class ResearchResult:
-    """Research result with citations"""
-    summary: str
-    findings: List[Dict[str, Any]] = field(default_factory=list)
-    citations: List[Dict[str, Any]] = field(default_factory=list)
-    confidence_score: float = 0.0
-    metadata: Dict[str, Any] = field(default_factory=dict)
+if USE_AGENT_FRAMEWORK:
+    try:
+        from agents.deep_research.agent_framework_impl import (
+            AgentFrameworkResearchAgent,
+            ResearchPlan,
+            ResearchResult
+        )
+        logger.info("Using Microsoft Agent Framework implementation")
+        _AgentImplementation = AgentFrameworkResearchAgent
+    except ImportError as e:
+        logger.warning(f"Failed to import Agent Framework: {e}. Falling back to legacy implementation.")
+        USE_AGENT_FRAMEWORK = False
 
 
-class DeepResearchAgent:
+# Legacy implementation (fallback)
+if not USE_AGENT_FRAMEWORK:
+    @dataclass
+    class ResearchPlan:
+        """Research plan structure"""
+        task: str
+        steps: List[Dict[str, Any]] = field(default_factory=list)
+        status: str = "pending"  # pending, in_progress, completed, failed
+        created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+        updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+        
+        
+    @dataclass
+    class ResearchResult:
+        """Research result with citations"""
+        summary: str
+        findings: List[Dict[str, Any]] = field(default_factory=list)
+        citations: List[Dict[str, Any]] = field(default_factory=list)
+        confidence_score: float = 0.0
+        metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+class LegacyDeepResearchAgent:
     """
     Main Deep Research Agent implementing:
     - Planning: Break down research tasks
@@ -329,3 +350,14 @@ class DeepResearchAgent:
             "report": report,
             "status": "completed"
         }
+
+
+# Main class that selects the appropriate implementation
+if USE_AGENT_FRAMEWORK:
+    # Use Agent Framework implementation
+    DeepResearchAgent = _AgentImplementation
+else:
+    # Use legacy implementation
+    DeepResearchAgent = LegacyDeepResearchAgent
+    
+logger.info(f"DeepResearchAgent initialized with {'Agent Framework' if USE_AGENT_FRAMEWORK else 'Legacy'} implementation")
