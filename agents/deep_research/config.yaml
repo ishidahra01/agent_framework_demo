@@ -1,0 +1,40 @@
+name: deep-research
+roles:
+  - researcher
+  - fact_checker
+  - writer
+memory:
+  short_term: inproc_cache
+  long_term:
+    type: azure_ai_search
+    index: agent-mem-long
+tools:
+  - web_search_bing
+  - browser_safe
+  - rag_corpus
+  - mcp_jira
+policies:
+  domain_allowlist:
+    - "*.gov"
+    - "*.ac.jp"
+    - "*.co.jp"
+    - "*.microsoft.com"
+    - "*.edu"
+  require_citations: true
+  human_approval:
+    steps:
+      - external_data_export
+      - suspicious_domain
+  max_tokens_per_request: 4000
+  rate_limits:
+    requests_per_minute: 60
+    tokens_per_minute: 150000
+observability:
+  tracing: opentelemetry
+  logging: json
+  prompt_versioning: enabled
+  metrics:
+    - token_usage
+    - cost
+    - latency
+    - success_rate

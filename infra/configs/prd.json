@@ -1,0 +1,30 @@
+{
+  "environment": "prd",
+  "azure": {
+    "region": "japaneast",
+    "resource_group": "agent-framework-prd-rg"
+  },
+  "api": {
+    "port": 8080,
+    "log_level": "INFO",
+    "cors_origins": ["https://agent.example.com"]
+  },
+  "worker": {
+    "concurrency": 8,
+    "log_level": "INFO"
+  },
+  "agent": {
+    "max_tokens_per_job": 100000,
+    "max_job_duration_minutes": 60
+  },
+  "memory": {
+    "short_term_ttl_seconds": 3600,
+    "long_term_enabled": true
+  },
+  "policies": {
+    "require_citations": true,
+    "require_human_approval": true,
+    "rate_limit_requests_per_minute": 60,
+    "rate_limit_tokens_per_minute": 150000
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "environment": "dev",
+  "azure": {
+    "region": "japaneast",
+    "resource_group": "agent-framework-dev-rg"
+  },
+  "api": {
+    "port": 8080,
+    "log_level": "DEBUG",
+    "cors_origins": ["http://localhost:3000", "http://localhost:8080"]
+  },
+  "worker": {
+    "concurrency": 2,
+    "log_level": "DEBUG"
+  },
+  "agent": {
+    "max_tokens_per_job": 50000,
+    "max_job_duration_minutes": 30
+  },
+  "memory": {
+    "short_term_ttl_seconds": 1800,
+    "long_term_enabled": false
+  },
+  "policies": {
+    "require_citations": true,
+    "require_human_approval": false,
+    "rate_limit_requests_per_minute": 100,
+    "rate_limit_tokens_per_minute": 200000
+  }
+}
