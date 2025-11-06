@@ -4,7 +4,7 @@ Handles security policies, approval workflows, and rate limiting
 """
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 import re
 
@@ -99,7 +99,7 @@ class RateLimitPolicy:
     
     def check_request_rate(self) -> Optional[PolicyViolation]:
         """Check if request rate limit is exceeded"""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         cutoff = now - timedelta(minutes=1)
         
         # Clean old entries
@@ -118,7 +118,7 @@ class RateLimitPolicy:
     
     def check_token_rate(self, tokens: int) -> Optional[PolicyViolation]:
         """Check if token rate limit is exceeded"""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         cutoff = now - timedelta(minutes=1)
         
         # Clean old entries
@@ -152,13 +152,13 @@ class ApprovalPolicy:
     
     def request_approval(self, step_id: str, context: Dict[str, Any]) -> str:
         """Request approval for a step"""
-        approval_id = f"approval_{step_id}_{datetime.utcnow().timestamp()}"
+        approval_id = f"approval_{step_id}_{datetime.now(timezone.utc).timestamp()}"
         
         self.pending_approvals[approval_id] = {
             "step_id": step_id,
             "context": context,
             "status": "pending",
-            "requested_at": datetime.utcnow()
+            "requested_at": datetime.now(timezone.utc)
         }
         
         logger.info(f"Approval requested: {approval_id}")
@@ -171,7 +171,7 @@ class ApprovalPolicy:
         
         self.pending_approvals[approval_id]["status"] = "approved"
         self.pending_approvals[approval_id]["approver"] = approver
-        self.pending_approvals[approval_id]["approved_at"] = datetime.utcnow()
+        self.pending_approvals[approval_id]["approved_at"] = datetime.now(timezone.utc)
         
         logger.info(f"Approval granted: {approval_id} by {approver}")
         return True
@@ -183,7 +183,7 @@ class ApprovalPolicy:
         
         self.pending_approvals[approval_id]["status"] = "rejected"
         self.pending_approvals[approval_id]["approver"] = approver
-        self.pending_approvals[approval_id]["rejected_at"] = datetime.utcnow()
+        self.pending_approvals[approval_id]["rejected_at"] = datetime.now(timezone.utc)
         self.pending_approvals[approval_id]["reason"] = reason
         
         logger.info(f"Approval rejected: {approval_id} by {approver}")

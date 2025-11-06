@@ -4,7 +4,7 @@ Short-term and Long-term memory implementations
 """
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dataclasses import dataclass, field
 import logging
 import json
@@ -17,7 +17,7 @@ class MemoryEntry:
     """Memory entry structure"""
     key: str
     value: Any
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     ttl: Optional[int] = None  # seconds
     metadata: Dict[str, Any] = field(default_factory=dict)
     
@@ -26,7 +26,7 @@ class MemoryEntry:
         if self.ttl is None:
             return False
         expiry = self.timestamp + timedelta(seconds=self.ttl)
-        return datetime.utcnow() > expiry
+        return datetime.now(timezone.utc) > expiry
 
 
 class BaseMemory(ABC):
@@ -135,7 +135,7 @@ class AzureAISearchMemory(BaseMemory):
             document = {
                 "id": key,
                 "content": json.dumps(value) if not isinstance(value, str) else value,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "metadata": json.dumps(metadata or {})
             }
             

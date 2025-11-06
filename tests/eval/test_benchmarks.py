@@ -127,7 +127,7 @@ class AgentEvaluator:
                 "success_score": self.evaluate_task_success(result),
                 "citation_score": self.evaluate_citation_quality(result),
                 "cost_score": self.evaluate_cost_efficiency(result),
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
             
             results.append(eval_result)

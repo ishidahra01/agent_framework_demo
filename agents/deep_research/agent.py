@@ -4,7 +4,7 @@ Planning, Execution, Reflection, and Reporting cycle
 """
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 import yaml
 import logging
 
@@ -98,7 +98,7 @@ class DeepResearchAgent:
         steps = await self._decompose_task(task, constraints)
         plan.steps = steps
         plan.status = "planned"
-        plan.updated_at = datetime.utcnow()
+        plan.updated_at = datetime.now(timezone.utc)
         
         # Store plan in memory
         if self.memory:
@@ -149,7 +149,7 @@ class DeepResearchAgent:
         logger.info(f"Executing research plan for task: {plan.task}")
         
         plan.status = "in_progress"
-        plan.updated_at = datetime.utcnow()
+        plan.updated_at = datetime.now(timezone.utc)
         
         findings = []
         citations = []
@@ -179,7 +179,7 @@ class DeepResearchAgent:
                 step["error"] = str(e)
         
         plan.status = "completed"
-        plan.updated_at = datetime.utcnow()
+        plan.updated_at = datetime.now(timezone.utc)
         
         # Create result
         result = ResearchResult(
@@ -189,7 +189,7 @@ class DeepResearchAgent:
             confidence_score=self._calculate_confidence(findings),
             metadata={
                 "plan_id": id(plan),
-                "completed_at": datetime.utcnow().isoformat()
+                "completed_at": datetime.now(timezone.utc).isoformat()
             }
         )
         

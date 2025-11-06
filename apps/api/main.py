@@ -105,7 +105,7 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
 
@@ -116,7 +116,7 @@ async def create_job(request: JobRequest):
     """
     try:
         job_id = str(uuid.uuid4())
-        created_at = datetime.utcnow()
+        created_at = datetime.now(timezone.utc)
         
         # Create job status
         job_status = JobStatus(
@@ -212,7 +212,7 @@ async def cancel_job(job_id: str):
         )
     
     job.status = "cancelled"
-    job.updated_at = datetime.utcnow()
+    job.updated_at = datetime.now(timezone.utc)
     
     logger.info(f"Job cancelled: {job_id}")
     
@@ -250,7 +250,7 @@ async def get_metrics():
     return {
         "total_jobs": total_jobs,
         "status_counts": status_counts,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
 
@@ -265,7 +265,7 @@ async def global_exception_handler(request, exc):
         content={
             "error": "Internal server error",
             "message": str(exc),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
     )
 

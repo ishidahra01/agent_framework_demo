@@ -110,7 +110,7 @@ class JobWorker:
                 "job_id": job_id,
                 "status": "completed",
                 "result": result,
-                "completed_at": datetime.utcnow().isoformat()
+                "completed_at": datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -123,7 +123,7 @@ class JobWorker:
                 "job_id": job_id,
                 "status": "failed",
                 "error": str(e),
-                "failed_at": datetime.utcnow().isoformat()
+                "failed_at": datetime.now(timezone.utc).isoformat()
             }
     
     async def poll_queue(self):

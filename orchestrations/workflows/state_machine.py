@@ -5,7 +5,7 @@ Handles checkpointing, resumption, and state transitions
 from enum import Enum
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, UTC, timezone
 import json
 import logging
 
@@ -33,7 +33,7 @@ class Checkpoint:
     state: WorkflowState
     step_index: int
     data: Dict[str, Any]
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
