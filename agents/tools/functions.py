@@ -3,11 +3,38 @@ Agent Framework Function Tools
 Implements tools as decorated functions compatible with Microsoft Agent Framework
 """
 from typing import Annotated
-from pydantic import Field
-from agent_framework import ai_function
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Try to import agent_framework components
+try:
+    from pydantic import Field
+    from agent_framework import ai_function
+    AGENT_FRAMEWORK_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Agent Framework not available: {e}. Tools will not work without it.")
+    AGENT_FRAMEWORK_AVAILABLE = False
+    # Provide fallback for when agent_framework is not available
+    def ai_function(*args, **kwargs):
+        """Fallback decorator when agent_framework is not available"""
+        def decorator(func):
+            return func
+        return decorator if args and callable(args[0]) else decorator
+    
+    # Fallback for Field
+    class Field:
+        """Fallback for pydantic Field"""
+        def __init__(self, *args, **kwargs):
+            pass
+        def __call__(self, *args, **kwargs):
+            return ""
+
+    Annotated = None  # Will cause issues if used without agent_framework
+
+
+if not AGENT_FRAMEWORK_AVAILABLE:
+    logger.error("Agent Framework dependencies not installed. Install with: pip install agent-framework pydantic")
 
 
 @ai_function(
