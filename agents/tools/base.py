@@ -159,12 +159,35 @@ class BrowserTool(BaseTool):
             )
         
         # Check domain allowlist
-        if self.allowed_domains and not any(url.endswith(domain.replace("*", "")) for domain in self.allowed_domains):
-            return ToolResult(
-                success=False,
-                data=None,
-                error=f"Domain not in allowlist: {url}"
-            )
+        if self.allowed_domains:
+            import re
+            # Extract domain from URL
+            domain_match = re.search(r'https?://([^/]+)', url)
+            if not domain_match:
+                return ToolResult(
+                    success=False,
+                    data=None,
+                    error=f"Invalid URL format: {url}"
+                )
+            
+            domain = domain_match.group(1)
+            
+            # Check against allowlist patterns
+            allowed = False
+            for pattern in self.allowed_domains:
+                # Convert wildcard pattern to regex
+                # *.example.com should match www.example.com, api.example.com, etc.
+                regex_pattern = '^' + pattern.replace('.', r'\.').replace('*', '.*') + '$'
+                if re.match(regex_pattern, domain):
+                    allowed = True
+                    break
+            
+            if not allowed:
+                return ToolResult(
+                    success=False,
+                    data=None,
+                    error=f"Domain not in allowlist: {url}"
+                )
         
         logger.info(f"Browsing URL: {url}")
         
